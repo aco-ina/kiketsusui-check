@@ -1,0 +1,10 @@
+# Netlify / Cloudflare Pages 用のセキュリティ・プライバシー設定
+# 外部への通信（解析・広告・外部スクリプト等）をブラウザ側でもブロックします。
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+
+/assets/*
+  Cache-Control: public, max-age=3600

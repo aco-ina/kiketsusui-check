@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f8f3ef">
+<meta name="color-scheme" content="light">
+<meta name="format-detection" content="telephone=no">
+<meta name="referrer" content="no-referrer">
+<title>気血水セルフチェック｜登録不要・無料</title>
+<meta name="description" content="20の質問に答えるだけで、東洋医学の「気・血・水」から今の身体のバランスをセルフチェック。登録不要・無料で、回答は外部に送信されません。">
+
+<!-- SNS・LINEでURLを送ったときのプレビュー（公開後、https://YOUR-SITE.netlify.app を実際のURLに書き換えてください） -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="気血水セルフチェック">
+<meta property="og:title" content="気血水セルフチェック">
+<meta property="og:description" content="20の質問に答えるだけ。東洋医学の「気・血・水」から今の身体のバランスをチェック。登録不要・無料。">
+<meta property="og:url" content="https://YOUR-SITE.netlify.app/">
+<meta property="og:image" content="https://YOUR-SITE.netlify.app/assets/img/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+<div class="container">
+
+<header class="site-header">
+  <div class="eyebrow">EASTERN MEDICINE / SELF CHECK</div>
+  <h1>気血水セルフチェック</h1>
+  <p class="intro">
+    今のあなたの身体は、どんな状態？<br>
+    当てはまる項目を選んでみましょう。
+  </p>
+  <ul class="badges" aria-label="このチェックの特徴">
+    <li>無料</li>
+    <li>登録不要</li>
+    <li>約2分</li>
+  </ul>
+</header>
+
+<main>
+
+<!-- ===== 質問画面 ===== -->
+<section id="quiz" aria-label="質問">
+  <div class="status">
+    <div class="counter" id="counter">0 / 20 項目選択中</div>
+    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+  </div>
+
+  <div id="questions"></div>
+
+  <button class="btn primary" id="showBtn" type="button">チェック結果を見る</button>
+  <p class="error" id="error" role="alert"></p>
+  <p class="notice">※複数選択できます。普段の状態や最近の傾向を思い浮かべてお答えください。</p>
+  <p class="privacy-lead">個人情報の入力は不要です。回答はこの端末の中だけで処理され、外部に送信・保存されません。</p>
+</section>
+
+<!-- ===== 結果画面 ===== -->
+<section id="result" aria-label="チェック結果" hidden>
+  <div class="card result-card">
+    <div class="result-label">YOUR CURRENT BALANCE</div>
+    <h2 id="mainTitle" tabindex="-1"></h2>
+    <p id="mainDescription"></p>
+
+    <h3>あなたの気血水バランス</h3>
+    <div id="scores"></div>
+
+    <h3>今の身体の傾向</h3>
+    <p id="explanation"></p>
+
+    <h3>おすすめの養生</h3>
+    <div id="advice"></div>
+
+    <h3>食養生のヒント</h3>
+    <div id="food"></div>
+    <p class="notice" id="foodNotice"></p>
+  </div>
+
+  <div class="card share-card">
+    <h3>結果を保存・シェアする</h3>
+    <button class="btn primary" id="saveImageBtn" type="button">結果を画像で保存</button>
+
+    <div class="share-buttons">
+      <button class="share-btn native" id="nativeShareBtn" type="button" hidden>シェアする</button>
+      <a class="share-btn line" id="lineShareBtn" href="#" target="_blank" rel="noopener noreferrer">LINEで送る</a>
+      <a class="share-btn x" id="xShareBtn" href="#" target="_blank" rel="noopener noreferrer">Xでポスト</a>
+      <button class="share-btn copy" id="copyBtn" type="button">URLをコピー</button>
+    </div>
+    <p class="hint">Instagramでシェアするときは、画像を保存してストーリーズやフィードに投稿してください。</p>
+  </div>
+
+  <div class="card links-card" id="linksCard" hidden>
+    <h3 id="linksTitle"></h3>
+    <p id="linksText"></p>
+    <div class="links" id="links"></div>
+  </div>
+
+  <p class="notice disclaimer">
+    この結果は、東洋医学の考え方をもとにしたセルフチェックです。医学的な診断ではありません。体調や症状が気になる場合は医療機関にご相談ください。
+  </p>
+
+  <button class="btn secondary" id="restartBtn" type="button">もう一度チェックする</button>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <details class="privacy">
+    <summary>プライバシーについて</summary>
+    <ul>
+      <li>氏名・メールアドレスなどの個人情報は一切お聞きしません。</li>
+      <li>回答はお使いの端末（ブラウザ）の中だけで処理され、外部のサーバーには送信されません。</li>
+      <li>回答や結果は保存されません。ページを閉じる・再読み込みすると消えます。</li>
+      <li>アクセス解析ツール・広告・Cookieは使用していません。</li>
+      <li>シェアボタンを押したときだけ、結果のタイプ名とこのページのURLが、ご自身で選んだシェア先のアプリに渡されます。</li>
+    </ul>
+  </details>
+  <p class="operator" id="operator" hidden></p>
+</footer>
+
+</div>
+
+<!-- ===== 画像保存ダイアログ ===== -->
+<div class="modal" id="imageModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+  <div class="modal-body">
+    <h3 id="modalTitle">結果画像</h3>
+    <img id="resultImage" alt="チェック結果の画像">
+    <p class="hint" id="saveHint"></p>
+    <button class="btn primary" id="downloadBtn" type="button">画像を保存</button>
+    <button class="btn secondary" id="closeModalBtn" type="button">閉じる</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
