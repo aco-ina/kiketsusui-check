@@ -17,7 +17,7 @@ window.APP_CONFIG = {
 
   // 公開URL（例: "https://kiketsusui.netlify.app/"）
   // 空 "" のままなら、開いているページのURLを自動で使います。
-  siteUrl: "",
+  siteUrl: "https://acco-kiketsusui.netlify.app/",
 
   // シェアするときの文章。{result} の部分が結果のタイプ名に置き換わります。
   shareText: "気血水セルフチェックをやってみました。結果は「{result}」でした。",

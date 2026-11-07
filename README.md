@@ -35,17 +35,15 @@ kiketsusui-app/
 編集のコツ：`"` で囲まれた文字の中だけを書き換え、行末のカンマ `,` は消さないでください。
 編集後は `index.html` をブラウザで開けば、そのまま動作確認できます。
 
-## 公開方法（Netlify・無料）
+## 公開について（Netlify・無料）
 
-1. https://app.netlify.com/drop を開く（アカウント登録が必要）
-2. `kiketsusui-app` フォルダごとドラッグ＆ドロップ
-3. 発行されたURL（例：`https://xxxx.netlify.app/`）で公開完了
-4. Site settings でサイト名を変えると、URLを `https://好きな名前.netlify.app/` にできます
+公開URL：**https://acco-kiketsusui.netlify.app/**
 
-### 公開後に1回だけ行うこと
-`index.html` の `https://YOUR-SITE.netlify.app` （2か所）を実際のURLに書き換えて、もう一度アップロードします。
-これで、LINEやInstagramにURLを貼ったときにプレビュー画像が表示されます。
-必要に応じて `config.js` の `siteUrl` にも同じURLを入れてください（結果画像の下部に表示されます）。
+- Netlify は GitHub のこのリポジトリとつながっています。
+  `main` ブランチに保存（push）すると、1〜2分で自動的にサイトへ反映されます。
+- URL（サイト名）を変えたときは、次の3か所も新しいURLに書き換えてください。
+  - `index.html` の `og:url` と `og:image`（LINEやSNSでURLを送ったときのプレビュー用）
+  - `config.js` の `siteUrl`（シェア文と結果画像の下部に表示）
 
 Cloudflare Pages・GitHub Pages でも、同じフォルダをそのまま公開できます
 （GitHub Pages では `_headers` は効きませんが、動作には影響しません）。
