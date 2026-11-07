@@ -28,8 +28,9 @@ window.APP_CONFIG = {
     title: "もっと知りたい方へ",
     text: "体質に合わせた養生法や講座のお知らせを発信しています。",
     items: [
-      { label: "Instagramを見る", url: "", style: "instagram" },
-      { label: "LINE公式アカウントで友だち追加", url: "", style: "line" }
+      { label: "東洋医学のInstagramを見る", url: "https://www.instagram.com/cocokara.kampo/", style: "instagram" },
+      { label: "サロンのInstagramを見る", url: "https://www.instagram.com/acco.pbd.yatabe/", style: "instagram" },
+      { label: "LINE公式アカウントで友だち追加", url: "https://lin.ee/vYYwe85", style: "line" }
       // { label: "講座・サロンのご案内", url: "https://...", style: "default" }
     ]
   }
