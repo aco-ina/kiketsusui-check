@@ -224,6 +224,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, .question:focus-wi
 }
 .share-btn.copy { grid-column: 1 / -1; }
 .nowrap { white-space: nowrap; display: inline-block; }
+#mainTitle .reading { font-size: .8em; }
 .share-btn.native { grid-column: 1 / -1; background: var(--btn-sub); border-color: var(--btn-sub); }
 .share-btn.line { background: var(--line-green); border-color: var(--line-green); color: #fff; }
 .share-btn.x { background: #1f1f1f; border-color: #1f1f1f; color: #fff; }

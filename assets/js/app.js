@@ -136,7 +136,9 @@
     } else {
       r.tops.forEach(function (t, i) {
         if (i > 0) titleEl.appendChild(document.createTextNode(" × "));
-        titleEl.appendChild(el("span", "nowrap", fullName(t.key)));
+        // 名前と読みを分け、幅が足りないときは読みの前で改行する
+        titleEl.appendChild(el("span", "nowrap", D.types[t.key].label));
+        titleEl.appendChild(el("span", "nowrap reading", "（" + D.types[t.key].reading + "）"));
       });
     }
     $("mainDescription").textContent = r.mixed
@@ -389,8 +391,9 @@
 
     // バランス
     y += 40;
+    var rowH = r.ranked.length > 5 ? 62 : 70;   // タイプ数が多いときは行間を詰める
     r.ranked.forEach(function (item) {
-      y += 70;
+      y += rowH;
       var isTop = item.ratio === r.topRatio;
       ctx.textAlign = "left";
       ctx.font = font(30, 600);
