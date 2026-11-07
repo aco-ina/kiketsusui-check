@@ -139,6 +139,30 @@ button:focus-visible, a:focus-visible, summary:focus-visible, .question:focus-wi
 .error { font-size: 13px; color: var(--error); text-align: center; margin: 12px 0 0; min-height: 1.5em; }
 
 .notice { font-size: 11px; color: var(--muted); margin-top: 20px; }
+/* 同点のときのタイプ選択 */
+#tiebreak h2 { font-size: 21px; font-weight: 500; margin: 5px 0 6px; outline: none; }
+#tiebreak p { font-size: 14px; margin: 0 0 14px; }
+.tie-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--accent-soft);
+  border: 1.5px solid var(--accent-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 0 0 12px;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tie-option:active { background: #f6ebe5; }
+.tie-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.tie-name { font-size: 16px; font-weight: 600; color: var(--accent); }
+.tie-label { font-size: 13px; color: var(--sub); }
+.tie-signs { margin: 6px 0 0; padding-left: 1.2em; font-size: 13px; color: var(--text); }
+@media (min-width: 768px) { .tie-option:hover { border-color: var(--accent); } }
+
 .about {
   font-size: 13px;
   color: var(--sub);

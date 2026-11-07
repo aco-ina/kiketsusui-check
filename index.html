@@ -59,6 +59,17 @@
   <p class="privacy-lead">個人情報の入力は不要です。回答はこの端末の中だけで処理され、外部に送信・保存されません。</p>
 </section>
 
+<!-- ===== 同点のときのタイプ選択 ===== -->
+<section id="tiebreak" aria-label="タイプを選ぶ" hidden>
+  <div class="card tie-card">
+    <div class="result-label">ONE MORE STEP</div>
+    <h2 id="tieTitle" tabindex="-1"></h2>
+    <p id="tieLead"></p>
+    <div id="tieOptions"></div>
+  </div>
+  <button class="btn secondary" id="tieBackBtn" type="button">質問に戻る</button>
+</section>
+
 <!-- ===== 結果画面 ===== -->
 <section id="result" aria-label="チェック結果" hidden>
   <div class="card result-card">

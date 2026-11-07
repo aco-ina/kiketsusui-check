@@ -89,7 +89,8 @@
   }
 
   // ---------- 判定 ----------
-  function compute(checked) {
+  // chosenKey：同点のとき、お客様が「今いちばん気になる」と選んだタイプ
+  function compute(checked, chosenKey) {
     var scores = {};
     typeKeys.forEach(function (k) { scores[k] = 0; });
     checked.forEach(function (input) { scores[input.dataset.type]++; });
@@ -102,14 +103,26 @@
     var tops = ranked.filter(function (r) { return r.ratio === topRatio; });
     var second = ranked.filter(function (r) { return r.ratio < topRatio && r.score > 0; })[0] || null;
 
+    var chosen = chosenKey ? tops.filter(function (t) { return t.key === chosenKey; })[0] : null;
+    if (chosen) {
+      // 選ばれたタイプを1位に、同点だったほかのタイプを次点にする
+      ranked = [chosen].concat(ranked.filter(function (r) { return r !== chosen; }));
+      second = ranked.filter(function (r) { return r !== chosen && r.score > 0; })[0] || null;
+      tops = [chosen];
+    }
+
     return {
       ranked: ranked,
       topRatio: topRatio,
       tops: tops,
       second: second,
-      mixed: tops.length >= 4,
+      mixed: !chosen && tops.length >= 4,
       low: ranked[0].score === 1
     };
+  }
+
+  function isTopItem(r, item) {
+    return r.tops.some(function (t) { return t.key === item.key; });
   }
 
   // シェア・画像用の短いタイトル
@@ -162,7 +175,7 @@
     var scoreArea = $("scores");
     scoreArea.textContent = "";
     r.ranked.forEach(function (item) {
-      var div = el("div", "type-item" + (item.ratio === r.topRatio ? " is-top" : ""));
+      var div = el("div", "type-item" + (isTopItem(r, item) ? " is-top" : ""));
       var row = el("div", "type-row");
       row.appendChild(el("span", "type-name", fullName(item.key)));
       row.appendChild(el("span", null, item.score + "/" + maxScores[item.key]));
@@ -222,23 +235,79 @@
       $("error").textContent = "当てはまる項目を1つ以上選んでください。";
       return;
     }
-    current = compute(checked);
+    var r = compute(checked);
+
+    // 同点のときは、今いちばん気になるタイプをお客様に選んでもらう
+    if (r.tops.length > 1) {
+      pendingChecked = checked;
+      renderTieBreak(r, checked);
+      $("quiz").hidden = true;
+      $("tiebreak").hidden = false;
+      window.scrollTo(0, 0);
+      $("tieTitle").focus({ preventScroll: true });
+      try { history.pushState({ view: "tie" }, ""); } catch (e) { /* file:// 等 */ }
+      return;
+    }
+    showResultView(r, "push");
+  }
+
+  var pendingChecked = null;
+
+  function renderTieBreak(r, checked) {
+    $("tieTitle").textContent = D.texts.tieTitle || "";
+    $("tieLead").textContent = D.texts.tieLead || "";
+    var area = $("tieOptions");
+    area.textContent = "";
+    r.tops.forEach(function (t) {
+      var type = D.types[t.key];
+      var btn = el("button", "tie-option");
+      btn.type = "button";
+      var head = el("span", "tie-head");
+      head.appendChild(el("span", "tie-name", type.nickname));
+      head.appendChild(el("span", "tie-label", fullName(t.key)));
+      btn.appendChild(head);
+      // そのタイプでチェックしたサイン
+      var ul = el("ul", "tie-signs");
+      checked.forEach(function (input) {
+        if (input.dataset.type !== t.key) return;
+        ul.appendChild(el("li", null, input.closest(".question").querySelector(".q-text").textContent));
+      });
+      btn.appendChild(ul);
+      btn.addEventListener("click", function () {
+        showResultView(compute(pendingChecked, t.key), "replace");
+      });
+      area.appendChild(btn);
+    });
+  }
+
+  function showResultView(r, historyMode) {
+    current = r;
     renderResult(current);
 
     $("quiz").hidden = true;
+    $("tiebreak").hidden = true;
     $("result").hidden = false;
     window.scrollTo(0, 0);
     $("mainTitle").focus({ preventScroll: true });
 
     // ブラウザの「戻る」で質問画面に戻れるように
-    try { history.pushState({ view: "result" }, ""); } catch (e) { /* file:// 等 */ }
+    try {
+      if (historyMode === "replace") history.replaceState({ view: "result" }, "");
+      else history.pushState({ view: "result" }, "");
+    } catch (e) { /* file:// 等 */ }
   }
 
   function showQuiz() {
     closeModal();
     $("result").hidden = true;
+    $("tiebreak").hidden = true;
     $("quiz").hidden = false;
     window.scrollTo(0, 0);
+  }
+
+  function backToQuiz() {
+    if (history.state && history.state.view) history.back();
+    else showQuiz();
   }
 
   function restart() {
@@ -248,18 +317,14 @@
       input.closest(".question").classList.remove("is-checked");
     });
     current = null;
+    pendingChecked = null;
     releaseImage();
     updateProgress();
-
-    if (history.state && history.state.view === "result") {
-      history.back();          // popstate で showQuiz される
-    } else {
-      showQuiz();
-    }
+    backToQuiz();              // 履歴があれば戻る（popstate で showQuiz される）
   }
 
   window.addEventListener("popstate", function () {
-    if (!$("result").hidden) showQuiz();
+    if (!$("result").hidden || !$("tiebreak").hidden) showQuiz();
   });
 
   // ---------- シェア ----------
@@ -403,7 +468,7 @@
     var rowH = r.ranked.length > 5 ? 62 : 70;   // タイプ数が多いときは行間を詰める
     r.ranked.forEach(function (item) {
       y += rowH;
-      var isTop = item.ratio === r.topRatio;
+      var isTop = isTopItem(r, item);
       ctx.textAlign = "left";
       ctx.font = font(30, 600);
       ctx.fillStyle = isTop ? P.accent : P.text;
@@ -584,6 +649,7 @@
 
     $("showBtn").addEventListener("click", showResult);
     $("restartBtn").addEventListener("click", restart);
+    $("tieBackBtn").addEventListener("click", backToQuiz);
     $("saveImageBtn").addEventListener("click", openImage);
     $("downloadBtn").addEventListener("click", saveImage);
     $("closeModalBtn").addEventListener("click", closeModal);
