@@ -563,7 +563,8 @@
     renderLinks();
 
     if (C.operatorName) {
-      $("operator").textContent = "© " + C.operatorName;
+      $("operator").textContent = "© " + C.operatorName +
+        (C.operatorNameKana ? "（" + C.operatorNameKana + "）" : "");
       $("operator").hidden = false;
     }
     if (navigator.share) $("nativeShareBtn").hidden = false;

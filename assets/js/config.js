@@ -10,7 +10,10 @@ window.APP_CONFIG = {
   siteTitle: "気血水セルフチェック",
 
   // 運営者名（ページ下部と保存画像に表示されます。空 "" なら非表示）
-  operatorName: "",
+  operatorName: "L’Atelier acco",
+
+  // 運営者名の読み（ページ下部にだけ、名前のあとに表示されます。空 "" なら非表示）
+  operatorNameKana: "アトリエアッコ",
 
   // 公開URL（例: "https://kiketsusui.netlify.app/"）
   // 空 "" のままなら、開いているページのURLを自動で使います。
