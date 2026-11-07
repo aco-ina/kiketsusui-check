@@ -37,8 +37,9 @@
   <ul class="badges" aria-label="このチェックの特徴">
     <li>無料</li>
     <li>登録不要</li>
-    <li>約2分</li>
+    <li>約1分</li>
   </ul>
+  <p class="about" id="introText" hidden></p>
 </header>
 
 <main>
@@ -71,12 +72,19 @@
     <h3>今の身体の傾向</h3>
     <p id="explanation"></p>
 
-    <h3>おすすめの養生</h3>
+    <h3>おすすめのライフスタイル</h3>
     <div id="advice"></div>
 
     <h3>食養生のヒント</h3>
     <div id="food"></div>
     <p class="notice" id="foodNotice"></p>
+  </div>
+
+  <!-- 無料カウンセリング・Instagram・LINE（config.js で設定） -->
+  <div class="card links-card" id="linksCard" hidden>
+    <h3 id="linksTitle"></h3>
+    <p id="linksText"></p>
+    <div class="links" id="links"></div>
   </div>
 
   <div class="card share-card">
@@ -90,12 +98,6 @@
       <button class="share-btn copy" id="copyBtn" type="button">URLをコピー</button>
     </div>
     <p class="hint">Instagramでシェアするときは、画像を保存してストーリーズやフィードに投稿してください。</p>
-  </div>
-
-  <div class="card links-card" id="linksCard" hidden>
-    <h3 id="linksTitle"></h3>
-    <p id="linksText"></p>
-    <div class="links" id="links"></div>
   </div>
 
   <p class="notice disclaimer">

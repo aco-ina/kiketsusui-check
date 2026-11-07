@@ -20,17 +20,17 @@ window.APP_CONFIG = {
   siteUrl: "",
 
   // シェアするときの文章。{result} の部分が結果のタイプ名に置き換わります。
-  shareText: "気血水セルフチェックをやってみました。私は「{result}」タイプでした。",
+  shareText: "気血水セルフチェックをやってみました。結果は「{result}」でした。",
 
-  // 結果ページに表示するリンク（Instagram・LINE公式アカウントなど）
+  // 結果のすぐ下に表示するカウンセリング案内とリンク（Instagram・LINE公式アカウントなど）
   // url が空 "" のものは表示されません。不要な行は削除してもOKです。
   links: {
-    title: "もっと知りたい方へ",
-    text: "体質に合わせた養生法や講座のお知らせを発信しています。",
+    title: "もっと詳しく聞きたい方へ",
+    text: "約20分のオンラインプチカウンセリング（無料）を受けてみませんか？LINE公式アカウントのメッセージから、お気軽にお問い合わせくださいね。",
     items: [
+      { label: "LINEで無料カウンセリングを相談する", url: "https://lin.ee/vYYwe85", style: "line" },
       { label: "東洋医学のInstagramを見る", url: "https://www.instagram.com/cocokara.kampo/", style: "instagram" },
-      { label: "サロンのInstagramを見る", url: "https://www.instagram.com/acco.pbd.yatabe/", style: "instagram" },
-      { label: "LINE公式アカウントで友だち追加", url: "https://lin.ee/vYYwe85", style: "line" }
+      { label: "サロンのInstagramを見る", url: "https://www.instagram.com/acco.pbd.yatabe/", style: "instagram" }
       // { label: "講座・サロンのご案内", url: "https://...", style: "default" }
     ]
   }

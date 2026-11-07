@@ -142,8 +142,8 @@
       });
     }
     $("mainDescription").textContent = r.mixed
-      ? D.mixedResult.short
-      : r.tops.map(function (t) { return D.types[t.key].short; }).join("／");
+      ? D.mixedResult.nickname
+      : r.tops.map(function (t) { return D.types[t.key].nickname; }).join("／");
 
     // 傾向
     var ex = r.mixed
@@ -175,18 +175,21 @@
       scoreArea.appendChild(div);
     });
 
-    // 生活の養生（重複は除く）
+    // おすすめのライフスタイル＋日常のヒント（重複は除く）
     var adviceArea = $("advice");
     adviceArea.textContent = "";
     var seen = {};
     adviceSources(r).forEach(function (src) {
-      var items = src.data.advice.filter(function (a) { return !seen[a]; });
-      if (!items.length) return;
+      var items = (src.data.advice || []).filter(function (a) { return !seen[a]; });
       items.forEach(function (a) { seen[a] = true; });
+      if (!src.data.lifestyle && !items.length) return;
       if (src.name) adviceArea.appendChild(el("div", "group-title", src.name));
-      var ul = el("ul");
-      items.forEach(function (a) { ul.appendChild(el("li", null, a)); });
-      adviceArea.appendChild(ul);
+      if (src.data.lifestyle) adviceArea.appendChild(el("p", "lifestyle", src.data.lifestyle));
+      if (items.length) {
+        var ul = el("ul");
+        items.forEach(function (a) { ul.appendChild(el("li", null, a)); });
+        adviceArea.appendChild(ul);
+      }
     });
 
     // 食養生
@@ -267,7 +270,13 @@
   }
 
   function shareText() {
-    return fill(C.shareText || "", { result: current ? resultShortTitle(current) : "" });
+    var result = "";
+    if (current) {
+      result = (!current.mixed && current.tops.length === 1)
+        ? D.types[current.tops[0].key].nickname + "（" + D.types[current.tops[0].key].label + "）"
+        : resultShortTitle(current);
+    }
+    return fill(C.shareText || "", { result: result });
   }
 
   function nativeShare() {
@@ -382,9 +391,9 @@
 
     y += 56;
     spacing(ctx, 0);
-    var sub = r.mixed ? D.mixedResult.short
-      : r.tops.length > 1 ? "複数の傾向が同じくらい見られます"
-      : D.types[r.tops[0].key].short;
+    var sub = r.mixed ? D.mixedResult.nickname
+      : r.tops.length > 1 ? r.tops.map(function (t) { return D.types[t.key].nickname; }).join(" × ")
+      : D.types[r.tops[0].key].nickname;
     fitFont(ctx, sub, CW, 30, 22, 400);
     ctx.fillStyle = P.sub;
     ctx.fillText(sub, W / 2, y);
@@ -558,6 +567,10 @@
   // ---------- 初期化 ----------
   function init() {
     document.title = C.siteTitle ? C.siteTitle + "｜登録不要・無料" : document.title;
+    if (D.intro) {
+      $("introText").textContent = D.intro;
+      $("introText").hidden = false;
+    }
     renderQuestions();
     updateProgress();
     renderLinks();
