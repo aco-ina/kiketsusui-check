@@ -246,6 +246,13 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
   margin: 16px 0 0;
 }
 #result p.balance-about { font-size: 13px; background: var(--accent-soft); margin: 4px 0 6px; }
+#result p.chosen-note {
+  color: var(--accent);
+  font-weight: 500;
+  border-top: 1px dashed var(--line);
+  padding-top: 10px;
+  margin-top: 4px;
+}
 #result p.lifestyle {
   background: var(--accent-soft);
   border-left: 3px solid var(--accent-border);

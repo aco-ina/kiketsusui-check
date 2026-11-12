@@ -242,6 +242,20 @@
     if (r.low) ex += D.texts.low;
     $("explanation").textContent = ex;
 
+    // 最後に「いちばん気になるサイン」を選んだときのひとこと
+    var note = $("chosenNote");
+    if (r.chosenSign && !r.mixed && D.texts.chosen) {
+      var t0 = D.types[r.tops[0].key];
+      note.textContent = fill(D.texts.chosen, {
+        sign: r.chosenSign,
+        name: t0.nickname + "（" + t0.label + "）"
+      });
+      note.hidden = false;
+    } else {
+      note.textContent = "";
+      note.hidden = true;
+    }
+
     // スコア
     var scoreArea = $("scores");
     scoreArea.textContent = "";
@@ -346,7 +360,7 @@
       input.type = "radio";
       input.name = "tieSign";
       input.addEventListener("change", function () {
-        tieChoice = s.key;
+        tieChoice = s;
         $("tieDecideBtn").disabled = false;
         Array.prototype.forEach.call(area.querySelectorAll(".sign-option"), function (o) {
           o.classList.toggle("is-selected", o === label);
@@ -358,11 +372,13 @@
     });
   }
 
-  var tieChoice = null;   // 選ばれたサインのタイプ
+  var tieChoice = null;   // 選ばれたサイン { key: タイプ, text: サインの文 }
 
   function decideTie() {
     if (!tieChoice) return;
-    showResultView(compute(answers, tieChoice), "replace");
+    var r = compute(answers, tieChoice.key);
+    r.chosenSign = tieChoice.text;
+    showResultView(r, "replace");
   }
 
   function showResultView(r, historyMode) {
