@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f8f3ef">
+<meta name="color-scheme" content="light">
+<meta name="format-detection" content="telephone=no">
+<meta name="referrer" content="no-referrer">
+<title>五臓セルフチェック｜登録不要・無料</title>
+<meta name="description" content="20の質問に答えるだけで、東洋医学の「五臓（肝・心・脾・肺・腎）」から今のあなたのタイプをセルフチェック。登録不要・無料で、回答は外部に送信されません。">
+
+<!-- SNS・LINEでURLを送ったときのプレビュー（URLを変えたときは、下の og:url と og:image も書き換えてください） -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="五臓セルフチェック">
+<meta property="og:title" content="五臓セルフチェック">
+<meta property="og:description" content="20の質問に答えるだけ。東洋医学の「五臓」から今のあなたのタイプをチェック。登録不要・無料。">
+<meta property="og:url" content="https://acco-kiketsusui.netlify.app/gozou/">
+<meta property="og:image" content="https://acco-kiketsusui.netlify.app/assets/img/ogp-gozou.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" type="image/png" href="../assets/img/favicon.png">
+<link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+
+<body>
+<div class="container">
+
+<header class="site-header">
+  <div class="eyebrow">EASTERN MEDICINE / SELF CHECK</div>
+  <h1>五臓セルフチェック</h1>
+</header>
+
+<main>
+
+<!-- ===== スタート画面 ===== -->
+<section id="start" aria-label="はじめに">
+  <div class="card start-card">
+    <p class="intro">
+      あなたの五臓は、どんなタイプ？<br>
+      直感で答えてみましょう。
+    </p>
+    <ul class="badges" aria-label="このチェックの特徴">
+      <li>全<span id="questionCount">20</span>問</li>
+      <li>約1分</li>
+      <li>無料・登録不要</li>
+    </ul>
+    <p class="about" id="introText" hidden></p>
+    <button class="btn primary start-btn" id="startBtn" type="button">チェックをはじめる</button>
+  </div>
+  <p class="privacy-lead">個人情報の入力は不要です。回答はこの端末の中だけで処理され、外部に送信・保存されません。</p>
+</section>
+
+<!-- ===== 質問画面（1問ずつ） ===== -->
+<section id="quiz" aria-label="質問" hidden>
+  <div class="status">
+    <div class="counter" id="counter">1 / 20</div>
+    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+  </div>
+
+  <div class="card q-card" id="qCard" aria-live="polite">
+    <div class="q-num" id="qNum">Q1</div>
+    <p class="q-text" id="qText"></p>
+    <div class="answers" id="answerButtons"></div>
+  </div>
+
+  <button class="link-btn" id="prevBtn" type="button" hidden>‹ 前の質問に戻る</button>
+  <p class="notice">普段の状態や、最近の傾向を思い浮かべてお答えください。</p>
+</section>
+
+<!-- ===== 同点・僅差のときのサイン選択 ===== -->
+<section id="tiebreak" aria-label="いちばん気になるサインを選ぶ" hidden>
+  <div class="card tie-card">
+    <div class="result-label">ONE MORE STEP</div>
+    <h2 id="tieTitle" tabindex="-1"></h2>
+    <p id="tieLead"></p>
+    <div id="tieOptions" role="radiogroup" aria-labelledby="tieLead"></div>
+    <button class="btn primary" id="tieDecideBtn" type="button" disabled>この内容で結果を見る</button>
+  </div>
+  <button class="btn secondary" id="tieBackBtn" type="button">質問に戻る</button>
+</section>
+
+<!-- ===== 結果画面 ===== -->
+<section id="result" aria-label="チェック結果" hidden>
+  <div class="card result-card">
+    <div class="result-label">YOUR TYPE</div>
+    <h2 id="mainTitle" tabindex="-1"></h2>
+    <p id="mainDescription"></p>
+
+    <h3>あなたの五臓バランス</h3>
+    <!-- 五臓のイラスト（文字は自由に変更できます） -->
+    <ul class="kbs kbs-five" aria-label="五臓とは">
+      <li class="kbs-item kbs-kan"><span class="kbs-char">肝</span><span class="kbs-label">巡りと<wbr>感情</span></li>
+      <li class="kbs-item kbs-shin"><span class="kbs-char">心</span><span class="kbs-label">心と<wbr>血流</span></li>
+      <li class="kbs-item kbs-hi"><span class="kbs-char">脾</span><span class="kbs-label">消化と<wbr>エネルギー</span></li>
+      <li class="kbs-item kbs-hai"><span class="kbs-char">肺</span><span class="kbs-label">呼吸と<wbr>肌</span></li>
+      <li class="kbs-item kbs-jin"><span class="kbs-char">腎</span><span class="kbs-label">生命力と<wbr>エイジング</span></li>
+    </ul>
+    <p class="about balance-about" id="balanceAbout" hidden></p>
+    <div id="scores"></div>
+
+    <h3>あなたのタイプ</h3>
+    <p id="explanation"></p>
+    <ul class="features" id="features" hidden></ul>
+    <p class="chosen-note" id="chosenNote" hidden></p>
+  </div>
+
+  <!-- 無料カウンセリング・Instagram・LINE（gozou-data.js の config で設定） -->
+  <div class="card links-card" id="linksCard" hidden>
+    <h3 id="linksTitle"></h3>
+    <p id="linksText"></p>
+    <div class="links" id="links"></div>
+  </div>
+
+  <div class="card share-card">
+    <h3>結果を保存・シェアする</h3>
+    <button class="btn primary" id="saveImageBtn" type="button">結果を画像で保存</button>
+
+    <div class="share-buttons">
+      <button class="share-btn native" id="nativeShareBtn" type="button" hidden>シェアする</button>
+      <a class="share-btn line" id="lineShareBtn" href="#" target="_blank" rel="noopener noreferrer">LINEで送る</a>
+      <a class="share-btn x" id="xShareBtn" href="#" target="_blank" rel="noopener noreferrer">Xでポスト</a>
+      <button class="share-btn copy" id="copyBtn" type="button">URLをコピー</button>
+    </div>
+    <p class="hint">Instagramでシェアするときは、画像を保存してストーリーズやフィードに投稿してください。</p>
+  </div>
+
+  <p class="notice disclaimer">
+    この結果は、東洋医学の考え方をもとにしたセルフチェックです。医学的な診断ではありません。体調や症状が気になる場合は医療機関にご相談ください。
+  </p>
+
+  <button class="btn secondary" id="restartBtn" type="button">もう一度チェックする</button>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <details class="privacy">
+    <summary>プライバシーについて</summary>
+    <ul>
+      <li>氏名・メールアドレスなどの個人情報は一切お聞きしません。</li>
+      <li>回答はお使いの端末（ブラウザ）の中だけで処理され、外部のサーバーには送信されません。</li>
+      <li>回答や結果は保存されません。ページを閉じる・再読み込みすると消えます。</li>
+      <li>アクセス解析ツール・広告・Cookieは使用していません。</li>
+      <li>シェアボタンを押したときだけ、結果のタイプ名とこのページのURLが、ご自身で選んだシェア先のアプリに渡されます。</li>
+    </ul>
+  </details>
+  <p class="operator" id="operator" hidden></p>
+</footer>
+
+</div>
+
+<!-- ===== 画像保存ダイアログ ===== -->
+<div class="modal" id="imageModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+  <div class="modal-body">
+    <h3 id="modalTitle">結果画像</h3>
+    <img id="resultImage" alt="チェック結果の画像">
+    <p class="hint" id="saveHint"></p>
+    <button class="btn primary" id="downloadBtn" type="button">画像を保存</button>
+    <button class="btn secondary" id="closeModalBtn" type="button">閉じる</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/gozou-data.js"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

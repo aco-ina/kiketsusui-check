@@ -10,8 +10,9 @@
 (function () {
   "use strict";
 
-  var C = window.APP_CONFIG || {};
   var D = window.APP_DATA;
+  // 共通設定（config.js）に、ページごとの設定（データファイルの config）を上書きして使う
+  var C = Object.assign({}, window.APP_CONFIG || {}, D.config || {});
   var typeKeys = Object.keys(D.types);
 
   // 回答ボタン（data.js の answerSets）。質問ごとに answers でパターンを選ぶ
@@ -244,6 +245,15 @@
     if (r.low) ex += D.texts.low;
     $("explanation").textContent = ex;
 
+    // タイプの特徴（箇条書き。五臓チェックなど features があるページだけ）
+    var featArea = $("features");
+    if (featArea) {
+      featArea.textContent = "";
+      var feats = (r.mixed ? D.mixedResult.features : D.types[r.tops[0].key].features) || [];
+      feats.forEach(function (f) { featArea.appendChild(el("li", null, f)); });
+      featArea.hidden = feats.length === 0;
+    }
+
     // 最後に「いちばん気になるサイン」を選んだときのひとこと
     var note = $("chosenNote");
     if (r.chosenSign && !r.mixed && D.texts.chosen) {
@@ -277,9 +287,9 @@
 
     // おすすめのライフスタイル＋日常のヒント（重複は除く）
     var adviceArea = $("advice");
-    adviceArea.textContent = "";
     var seen = {};
-    adviceSources(r).forEach(function (src) {
+    if (adviceArea) adviceArea.textContent = "";
+    if (adviceArea) adviceSources(r).forEach(function (src) {
       var items = (src.data.advice || []).filter(function (a) { return !seen[a]; });
       items.forEach(function (a) { seen[a] = true; });
       if (!src.data.lifestyle && !items.length) return;
@@ -294,8 +304,8 @@
 
     // 食養生
     var foodArea = $("food");
-    foodArea.textContent = "";
-    adviceSources(r).forEach(function (src) {
+    if (foodArea) foodArea.textContent = "";
+    if (foodArea) adviceSources(r).forEach(function (src) {
       var f = src.data.food;
       if (!f) return;
       if (src.name) foodArea.appendChild(el("div", "group-title", src.name));
@@ -305,7 +315,7 @@
       if (f.tip) foodArea.appendChild(el("p", "food-tip", f.tip));
       if (f.avoid) foodArea.appendChild(el("p", "food-avoid", "控えめに：" + f.avoid));
     });
-    $("foodNotice").textContent = D.texts.foodNotice || "";
+    if ($("foodNotice")) $("foodNotice").textContent = D.texts.foodNotice || "";
 
     // シェアリンク
     var text = shareText();
@@ -544,7 +554,7 @@
     cv.width = W; cv.height = H;
     var ctx = cv.getContext("2d");
     var L = 120, R = W - 120, CW = R - L;
-    var FOOTER_TOP = H - 170;
+    var FOOTER_TOP = H - 170;   // 下の注意書きの位置（imageAutoHeight のときは内容に合わせて決め直す）
 
     var src = r.mixed ? D.mixedResult : D.types[r.tops[0].key];
     var title = r.mixed ? D.mixedResult.title : fullName(r.tops[0].key);
@@ -614,7 +624,7 @@
 
       // 結果タイトル
       y += 72;
-      text("YOUR CURRENT BALANCE", 24, 400, P.accent, "center", W / 2);
+      text(D.imageLabels && D.imageLabels.eyebrow || "YOUR CURRENT BALANCE", 24, 400, P.accent, "center", W / 2);
       y += 96;
       spacing(ctx, 2);
       if (draw) {
@@ -631,8 +641,19 @@
       }
 
       // 今の身体の傾向
-      heading("今の身体の傾向");
+      heading(D.imageLabels && D.imageLabels.tendency || "今の身体の傾向");
       paragraph(tendency, false);
+
+      // タイプの特徴（features があるときだけ）
+      if (src.features && src.features.length) {
+        src.features.forEach(function (f) { paragraph("・" + f, false); });
+      }
+
+      // ページごとのひとこと（例：カウンセリングのご案内）
+      if (D.imageNote) {
+        heading(D.imageLabels && D.imageLabels.note || "ご案内");
+        paragraph(D.imageNote, true);
+      }
 
       // おすすめのライフスタイル
       if (lifestyle) {
@@ -682,6 +703,14 @@
     // 収まる本文サイズを探す（34px から小さく）
     var bodySize = 34;
     while (bodySize > 24 && layout(bodySize, false) > FOOTER_TOP - 20) bodySize -= 2;
+
+    // 文章が少ないページ（imageAutoHeight: true）は、内容に合わせて画像の高さを縮める（最小 1350＝縦4:5）
+    if (D.imageAutoHeight) {
+      var need = layout(bodySize, false) + 80 + 170;
+      H = Math.max(1350, Math.min(1920, Math.ceil(need)));
+      cv.height = H;                       // サイズを変えると描画設定がリセットされる
+      FOOTER_TOP = H - 170;
+    }
 
     ctx.fillStyle = P.bg;
     ctx.fillRect(0, 0, W, H);

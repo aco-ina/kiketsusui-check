@@ -1,18 +1,34 @@
-# 気血水セルフチェック
+# 気血水セルフチェック ／ 五臓セルフチェック
 
 スマートフォン・PCのブラウザで動く、インストール不要のセルフチェックWebアプリです。
 HTML / CSS / JavaScript だけで動く静的サイトなので、Netlify などで無料で公開できます。
 
+| チェック | URL | 内容を書いているファイル |
+|---|---|---|
+| 気血水セルフチェック | https://acco-kiketsusui.netlify.app/ | `assets/js/data.js` |
+| 五臓セルフチェック | https://acco-kiketsusui.netlify.app/gozou/ | `assets/js/gozou-data.js` |
+
+2つのページは同じプログラム（`app.js`）とデザイン（`style.css`）を共有していますが、
+質問・結果・回答はそれぞれ別で、勝手につながることはありません。
+
+## 使い方の流れ
+
+1. スタート画面で「チェックをはじめる」
+2. 1問ずつ4択（はい／たまにある／ほとんどない／いいえ など）で答える（はい3点〜いいえ0点）
+3. 1位との差が1点以内のタイプがあるときは、「今いちばん気になるサイン」を1つ選ぶ
+4. 結果を表示（画像保存・シェア・LINEで無料カウンセリングへ）
+
 ## ファイル構成
 
 ```
-kiketsusui-app/
-├── index.html              … ページ本体（通常は編集不要。OGPのURLだけ公開後に書き換え）
+├── index.html              … 気血水チェックのページ
+├── gozou/index.html        … 五臓チェックのページ
 ├── _headers                … セキュリティ設定（外部通信をブロック）
 ├── assets/
 │   ├── js/
-│   │   ├── config.js       … ★サイト名・運営者名・シェア文・Instagram/LINEリンク
-│   │   ├── data.js         … ★質問・解説・養生・食養生の文章
+│   │   ├── config.js       … ★共通設定：サイト名・運営者名・公開URL・シェア文・リンク
+│   │   ├── data.js         … ★気血水：質問・解説・ライフスタイル・食養生の文章
+│   │   ├── gozou-data.js   … ★五臓：質問・解説の文章（先頭の config で設定を上書き）
 │   │   └── app.js          … 動作プログラム（通常は編集不要）
 │   ├── css/style.css       … デザイン（色は先頭の :root で変更）
 │   └── img/                … SNSプレビュー画像・アイコン
@@ -25,11 +41,14 @@ kiketsusui-app/
 
 | やりたいこと | 編集する場所 |
 |---|---|
-| Instagram・LINE公式アカウントのリンクを表示 | `config.js` の `links.items` の `url` にURLを入れる（空なら非表示） |
+| Instagram・LINE公式アカウントのリンク | 気血水：`config.js` の `links`／五臓：`gozou-data.js` の `config.links` |
 | サロン名・講座名を表示 | `config.js` の `operatorName` |
-| シェア文を変更 | `config.js` の `shareText`（`{result}` がタイプ名になる） |
-| 質問の文言を変更・追加・削除 | `data.js` の `questions` |
-| タイプの解説・養生・食材を変更 | `data.js` の `types` |
+| シェア文を変更 | 気血水：`config.js` の `shareText`／五臓：`gozou-data.js` の `config.shareText` |
+| 質問の文言を変更・追加・削除 | `data.js` / `gozou-data.js` の `questions` |
+| 質問ごとの答えの言葉 | `answerSets`（質問に `answers: "concern"` などを付けて選ぶ） |
+| タイプの解説・ライフスタイル・食材を変更 | `data.js` / `gozou-data.js` の `types` |
+| 「いちばん気になるサイン」を選ぶ条件 | `closeMargin`（1位との差が何点以内か） |
+| 2番目のタイプも紹介する条件 | `secondMargin`（1位との差が何点以内か） |
 | 色を変更 | `style.css` 先頭の `:root` |
 
 編集のコツ：`"` で囲まれた文字の中だけを書き換え、行末のカンマ `,` は消さないでください。

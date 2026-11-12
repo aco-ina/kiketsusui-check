@@ -286,6 +286,25 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
 .kbs-ketsu { border-color: #a5484e; background: #f6e4e4; color: #9a3d44; }
 .kbs-sui   { border-color: #4f7d88; background: #e2edef; color: #43707b; }
 
+/* 五臓のイラスト（上に3つ、下に2つ） */
+#result ul.kbs-five {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(8px, 3vw, 14px);
+  max-width: 440px;
+}
+#result ul.kbs-five .kbs-item { width: calc((100% - 2 * clamp(8px, 3vw, 14px)) / 3); }
+.kbs-kan  { border-color: #6f9a6a; background: #e8f1e5; color: #557f51; }
+.kbs-shin { border-color: #a5484e; background: #f6e4e4; color: #9a3d44; }
+.kbs-hi   { border-color: #c99a45; background: #faf1df; color: #b88732; }
+.kbs-hai  { border-color: #9b9690; background: #f5f3f0; color: #6f6a64; }
+.kbs-jin  { border-color: #3f4b66; background: #e6e9f0; color: #36415c; }
+
+/* タイプの特徴（五臓チェック） */
+#result ul.features { margin: 8px 0 4px; padding-left: 1.3em; }
+#result ul.features li { margin-bottom: 4px; }
+
 #result p.balance-about { font-size: 13px; background: var(--accent-soft); margin: 4px 0 6px; }
 #result p.chosen-note {
   color: var(--accent);
