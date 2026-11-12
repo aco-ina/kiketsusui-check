@@ -4,6 +4,8 @@
  *  文章を変更したいときは、このファイルの "  " の中を書き換えてください。
  *
  *  ・質問を追加/削除するときは questions に行を足す/消すだけでOK。
+ *    答え方を変えたいときは answers: "concern"（気になるか）や "habit"（習慣）を付けます。
+ *    付けない質問は "often"（よくあるか）の答え方になります。
  *    type には ki / stagnation / blood / stasis / yin / water のどれかを書きます。
  *    （タイプごとの満点は、質問数 ×「はい」の点数で自動計算されます）
  *  ・各項目の最後のカンマ（,）を消さないよう注意してください。
@@ -23,13 +25,35 @@ window.APP_DATA = {
   // ---------- スタート画面に出す説明（空 "" なら表示しません） ----------
   intro: "",
 
-  // ---------- 回答ボタン ----------
+  // ---------- 結果画面「あなたの気血水バランス」の下に出す説明（空 "" なら表示しません） ----------
+  balanceAbout: "漢方では、人の体は「気（き）」「血（けつ）」「水（すい）」の3つでできていると考えられています。この3つがたっぷりあって、しっかり巡ることで、カラダは中から潤い、心身のバランスが整います。",
+
+  // ---------- 回答ボタン（答え方のパターン） ----------
   // 上から順にボタンが並びます。points はタイプの点数（「はい」がいちばん高い点数）
-  answers: [
-    { label: "はい", points: 2 },
-    { label: "どちらかといえば", points: 1 },
-    { label: "いいえ", points: 0 }
-  ],
+  // 質問ごとに answers: "concern" のように指定します。指定がない質問は "often" を使います。
+  answerSets: {
+    // ① よくあるか（「〜しやすい」「〜がある」）
+    often: [
+      { label: "はい", points: 3 },
+      { label: "たまにある", points: 2 },
+      { label: "ほとんどない", points: 1 },
+      { label: "いいえ", points: 0 }
+    ],
+    // ② 気になるか（「〜が気になる」「〜な気がする」）
+    concern: [
+      { label: "はい", points: 3 },
+      { label: "少し気になる", points: 2 },
+      { label: "あまり気にならない", points: 1 },
+      { label: "いいえ", points: 0 }
+    ],
+    // ③ 習慣（「1日に飲む水分は500ml以下」など）
+    habit: [
+      { label: "はい", points: 3 },
+      { label: "日によってはそう", points: 2 },
+      { label: "たまにそう", points: 1 },
+      { label: "いいえ", points: 0 }
+    ]
+  },
 
   // ---------- タイプごとの解説・養生 ----------
   types: {
@@ -181,7 +205,7 @@ window.APP_DATA = {
   // ---------- 質問（各タイプ4問） ----------
   questions: [
     // A 気虚（パワー不足タイプ）
-    { text: "ほうれい線やたるみが気になる", type: "ki" },
+    { text: "ほうれい線やたるみが気になる", type: "ki", answers: "concern" },
     { text: "疲れやすく、休んでも疲れが残る", type: "ki" },
     { text: "風邪をひきやすい", type: "ki" },
     { text: "少し動くだけで汗をかきやすい", type: "ki" },
@@ -195,24 +219,24 @@ window.APP_DATA = {
     // C 血虚（うるおい不足タイプ）
     { text: "肌がカサカサ乾燥しやすい", type: "blood" },
     { text: "髪がパサつく、爪が割れやすい", type: "blood" },
-    { text: "目の疲れや乾きが気になる", type: "blood" },
-    { text: "立ちくらみや、眠りの浅さが気になる", type: "blood" },
+    { text: "目の疲れや乾きが気になる", type: "blood", answers: "concern" },
+    { text: "立ちくらみや、眠りの浅さが気になる", type: "blood", answers: "concern" },
 
     // D 瘀血（ドロドロ血タイプ）
-    { text: "シミやそばかすが気になる", type: "stasis" },
-    { text: "目の下のクマが気になる", type: "stasis" },
-    { text: "肌がくすんでいる気がする", type: "stasis" },
+    { text: "シミやそばかすが気になる", type: "stasis", answers: "concern" },
+    { text: "目の下のクマが気になる", type: "stasis", answers: "concern" },
+    { text: "肌がくすんでいる気がする", type: "stasis", answers: "concern" },
     { text: "肩こりや頭痛がある", type: "stasis" },
 
     // E 津液不足（水不足タイプ）
-    { text: "小じわが気になる", type: "yin" },
-    { text: "1日に飲む水分は500ml以下", type: "yin" },
+    { text: "小じわが気になる", type: "yin", answers: "concern" },
+    { text: "1日に飲む水分は500ml以下", type: "yin", answers: "habit" },
     { text: "便がかたく、コロコロしやすい", type: "yin" },
     { text: "ほてり、のぼせ、寝汗がある", type: "yin" },
 
     // F 水滞（水たまりタイプ）
     { text: "白ニキビができやすい", type: "water" },
-    { text: "顔や足のむくみが気になる", type: "water" },
+    { text: "顔や足のむくみが気になる", type: "water", answers: "concern" },
     { text: "雨の日は体調が悪くなりやすい", type: "water" },
     { text: "身体が重だるく、冷えやすい", type: "water" }
   ]

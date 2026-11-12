@@ -14,13 +14,24 @@
   var D = window.APP_DATA;
   var typeKeys = Object.keys(D.types);
 
-  // 回答ボタン（data.js の answers）。いちばん高い点数が「はい」
-  var ANSWERS = D.answers || [
-    { label: "はい", points: 2 },
-    { label: "どちらかといえば", points: 1 },
-    { label: "いいえ", points: 0 }
-  ];
-  var MAX_POINTS = Math.max.apply(null, ANSWERS.map(function (a) { return a.points; }));
+  // 回答ボタン（data.js の answerSets）。質問ごとに answers でパターンを選ぶ
+  var ANSWER_SETS = D.answerSets || {
+    often: [
+      { label: "はい", points: 3 },
+      { label: "たまにある", points: 2 },
+      { label: "ほとんどない", points: 1 },
+      { label: "いいえ", points: 0 }
+    ]
+  };
+  var DEFAULT_SET = ANSWER_SETS.often ? "often" : Object.keys(ANSWER_SETS)[0];
+  function answerSetFor(q) {
+    return ANSWER_SETS[q.answers] || ANSWER_SETS[DEFAULT_SET];
+  }
+  // 「はい」の点数（すべてのパターンの中でいちばん高い点数）
+  var MAX_POINTS = 0;
+  Object.keys(ANSWER_SETS).forEach(function (k) {
+    ANSWER_SETS[k].forEach(function (a) { MAX_POINTS = Math.max(MAX_POINTS, a.points); });
+  });
 
   // タイプごとの満点（＝質問数 × 「はい」の点数）
   var maxScores = {};
@@ -70,12 +81,16 @@
   var busy = false;        // 次の質問へ切り替え中は連打を無視
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function renderAnswerButtons() {
+  // その質問の答え方に合わせてボタンを作る（前に選んだ答えは色付きで表示）
+  function renderAnswerButtons(q) {
     var area = $("answerButtons");
-    ANSWERS.forEach(function (a) {
+    area.textContent = "";
+    answerSetFor(q).forEach(function (a) {
       var btn = el("button", "answer", a.label);
       btn.type = "button";
-      btn.dataset.points = a.points;
+      var selected = answers[qIndex] === a.points;
+      btn.classList.toggle("is-selected", selected);
+      btn.setAttribute("aria-pressed", selected ? "true" : "false");
       btn.addEventListener("click", function () { answer(a.points, btn); });
       area.appendChild(btn);
     });
@@ -89,11 +104,7 @@
     $("counter").textContent = (qIndex + 1) + " / " + total;
     $("progress").style.width = (qIndex / total * 100) + "%";
     $("prevBtn").hidden = qIndex === 0;
-    Array.prototype.forEach.call(document.querySelectorAll("#answerButtons .answer"), function (b) {
-      var selected = answers[qIndex] === Number(b.dataset.points);
-      b.classList.toggle("is-selected", selected);
-      b.setAttribute("aria-pressed", selected ? "true" : "false");
-    });
+    renderAnswerButtons(q);
     var card = $("qCard");
     card.classList.remove("slide-next", "slide-prev");
     if (direction && !reduceMotion) {
@@ -694,8 +705,11 @@
       $("introText").textContent = D.intro;
       $("introText").hidden = false;
     }
+    if (D.balanceAbout) {
+      $("balanceAbout").textContent = D.balanceAbout;
+      $("balanceAbout").hidden = false;
+    }
     $("questionCount").textContent = D.questions.length;
-    renderAnswerButtons();
     renderLinks();
 
     if (C.operatorName) {
