@@ -197,6 +197,12 @@
     return r.tops.some(function (t) { return t.key === item.key; });
   }
 
+  // シェア文などに使う名前：愛称があれば「パワー不足タイプ（気虚）」、なければ「肝タイプ」
+  function typeDisplayName(key) {
+    var t = D.types[key];
+    return t.nickname ? t.nickname + "（" + t.label + "）" : t.label + "タイプ";
+  }
+
   // シェア・画像用の短いタイトル
   function resultShortTitle(r) {
     if (r.mixed) return D.mixedResult.title;
@@ -226,9 +232,11 @@
         titleEl.appendChild(el("span", "nowrap reading", "（" + D.types[t.key].reading + "）"));
       });
     }
-    $("mainDescription").textContent = r.mixed
-      ? D.mixedResult.nickname
-      : r.tops.map(function (t) { return D.types[t.key].nickname; }).join("／");
+    var sub = r.mixed
+      ? (D.mixedResult.nickname || "")
+      : r.tops.map(function (t) { return D.types[t.key].nickname || ""; }).filter(Boolean).join("／");
+    $("mainDescription").textContent = sub;
+    $("mainDescription").hidden = !sub;            // 愛称がないページでは表示しない
 
     // 傾向
     var ex = r.mixed
@@ -260,7 +268,7 @@
       var t0 = D.types[r.tops[0].key];
       note.textContent = fill(D.texts.chosen, {
         sign: r.chosenSign,
-        name: t0.nickname + "（" + t0.label + "）"
+        name: typeDisplayName(r.tops[0].key)
       });
       note.hidden = false;
     } else {
@@ -458,7 +466,7 @@
     var result = "";
     if (current) {
       result = (!current.mixed && current.tops.length === 1)
-        ? D.types[current.tops[0].key].nickname + "（" + D.types[current.tops[0].key].label + "）"
+        ? typeDisplayName(current.tops[0].key)
         : resultShortTitle(current);
     }
     return fill(C.shareText || "", { result: result });
