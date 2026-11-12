@@ -233,7 +233,9 @@
     var ex = r.mixed
       ? D.mixedResult.description
       : r.tops.map(function (t) { return D.types[t.key].description; }).join("");
-    if (!r.mixed && r.second) {
+    // 2番目のタイプは、1位との差が secondMargin 点以内のときだけ紹介する
+    var secondMargin = typeof D.secondMargin === "number" ? D.secondMargin : 99;
+    if (!r.mixed && r.second && Math.abs(r.tops[0].score - r.second.score) <= secondMargin) {
       ex += fill(D.texts.second, {
         name: fullName(r.second.key),
         description: D.types[r.second.key].description
