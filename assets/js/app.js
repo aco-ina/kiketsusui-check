@@ -547,10 +547,8 @@
     var src = r.mixed ? D.mixedResult : D.types[r.tops[0].key];
     var title = r.mixed ? D.mixedResult.title : fullName(r.tops[0].key);
     var nickname = src.nickname || "";
+    // 画像には、お届けするタイプの説明だけを載せる
     var tendency = src.description || "";
-    if (!r.mixed && r.second) {
-      tendency += "また、" + fullName(r.second.key) + "の傾向も見られます。";
-    }
     var lifestyle = src.lifestyle || "";
     var food = src.food || { good: [] };
 
