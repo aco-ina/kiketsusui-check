@@ -164,12 +164,17 @@
     }).sort(function (a, b) { return b.ratio - a.ratio; });
 
     var topRatio = ranked[0].ratio;
-    var tops = ranked.filter(function (r) { return r.ratio === topRatio; });
-    var second = ranked.filter(function (r) { return r.ratio < topRatio && r.score > 0; })[0] || null;
+    var topScore = ranked[0].score;
+    // 1位との差が closeMargin 点以内のタイプは「同じくらい」とみなし、最後に選んでもらう
+    var margin = typeof D.closeMargin === "number" ? D.closeMargin : 0;
+    var tops = ranked.filter(function (r) {
+      return r.ratio === topRatio || (r.score > 0 && topScore - r.score <= margin);
+    });
+    var second = ranked.filter(function (r) { return tops.indexOf(r) < 0 && r.score > 0; })[0] || null;
 
     var chosen = chosenKey ? tops.filter(function (t) { return t.key === chosenKey; })[0] : null;
     if (chosen) {
-      // 選ばれたタイプを1位に、同点だったほかのタイプを次点にする
+      // 選ばれたタイプを1位に、候補だったほかのタイプを次点にする
       ranked = [chosen].concat(ranked.filter(function (r) { return r !== chosen; }));
       second = ranked.filter(function (r) { return r !== chosen && r.score > 0; })[0] || null;
       tops = [chosen];
