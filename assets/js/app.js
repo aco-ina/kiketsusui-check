@@ -14,10 +14,18 @@
   var D = window.APP_DATA;
   var typeKeys = Object.keys(D.types);
 
-  // タイプごとの満点（＝質問数）
+  // 回答ボタン（data.js の answers）。いちばん高い点数が「はい」
+  var ANSWERS = D.answers || [
+    { label: "はい", points: 2 },
+    { label: "どちらかといえば", points: 1 },
+    { label: "いいえ", points: 0 }
+  ];
+  var MAX_POINTS = Math.max.apply(null, ANSWERS.map(function (a) { return a.points; }));
+
+  // タイプごとの満点（＝質問数 × 「はい」の点数）
   var maxScores = {};
   typeKeys.forEach(function (k) {
-    maxScores[k] = D.questions.filter(function (q) { return q.type === k; }).length;
+    maxScores[k] = D.questions.filter(function (q) { return q.type === k; }).length * MAX_POINTS;
   });
 
   var $ = function (id) { return document.getElementById(id); };
@@ -56,44 +64,89 @@
     toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
   }
 
-  // ---------- 質問 ----------
-  function renderQuestions() {
-    var area = $("questions");
-    D.questions.forEach(function (q, i) {
-      var card = el("label", "question");
-      var input = document.createElement("input");
-      input.type = "checkbox";
-      input.dataset.type = q.type;
-      input.addEventListener("change", function () {
-        card.classList.toggle("is-checked", input.checked);
-        updateProgress();
-      });
-      var body = el("span");
-      body.appendChild(el("span", "q-num", "Q" + (i + 1)));
-      body.appendChild(el("span", "q-text", q.text));
-      card.appendChild(input);
-      card.appendChild(body);
-      area.appendChild(card);
+  // ---------- 質問（1問ずつ表示） ----------
+  var answers = [];        // 質問ごとの点数（メモリ上のみ）
+  var qIndex = 0;          // 表示中の質問番号（0から）
+  var busy = false;        // 次の質問へ切り替え中は連打を無視
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function renderAnswerButtons() {
+    var area = $("answerButtons");
+    ANSWERS.forEach(function (a) {
+      var btn = el("button", "answer", a.label);
+      btn.type = "button";
+      btn.dataset.points = a.points;
+      btn.addEventListener("click", function () { answer(a.points, btn); });
+      area.appendChild(btn);
     });
   }
 
-  function getChecked() {
-    return Array.prototype.slice.call(document.querySelectorAll("#questions input:checked"));
+  function renderQuestion(direction) {
+    var q = D.questions[qIndex];
+    var total = D.questions.length;
+    $("qNum").textContent = "Q" + (qIndex + 1);
+    $("qText").textContent = q.text;
+    $("counter").textContent = (qIndex + 1) + " / " + total;
+    $("progress").style.width = (qIndex / total * 100) + "%";
+    $("prevBtn").hidden = qIndex === 0;
+    Array.prototype.forEach.call(document.querySelectorAll("#answerButtons .answer"), function (b) {
+      var selected = answers[qIndex] === Number(b.dataset.points);
+      b.classList.toggle("is-selected", selected);
+      b.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+    var card = $("qCard");
+    card.classList.remove("slide-next", "slide-prev");
+    if (direction && !reduceMotion) {
+      void card.offsetWidth;   // アニメーションをやり直すため
+      card.classList.add(direction === "prev" ? "slide-prev" : "slide-next");
+    }
   }
 
-  function updateProgress() {
-    var n = getChecked().length;
-    $("counter").textContent = n + " / " + D.questions.length + " 項目選択中";
-    $("progress").style.width = (n / D.questions.length * 100) + "%";
-    if (n > 0) $("error").textContent = "";
+  function answer(points, btn) {
+    if (busy) return;
+    busy = true;
+    answers[qIndex] = points;
+    Array.prototype.forEach.call(document.querySelectorAll("#answerButtons .answer"), function (b) {
+      b.classList.toggle("is-selected", b === btn);
+    });
+    setTimeout(function () {
+      busy = false;
+      if (qIndex < D.questions.length - 1) {
+        qIndex++;
+        renderQuestion("next");
+      } else {
+        $("progress").style.width = "100%";
+        showResult();
+      }
+    }, reduceMotion ? 80 : 260);
+  }
+
+  function prevQuestion() {
+    if (busy || qIndex === 0) return;
+    qIndex--;
+    renderQuestion("prev");
+  }
+
+  // その人が「はい」「どちらかといえば」と答えた質問（タイプ別）
+  function answeredSigns(typeKey) {
+    var list = [];
+    D.questions.forEach(function (q, i) {
+      if (q.type === typeKey && answers[i] > 0) list.push(q.text);
+    });
+    return list;
   }
 
   // ---------- 判定 ----------
   // chosenKey：同点のとき、お客様が「今いちばん気になる」と選んだタイプ
-  function compute(checked, chosenKey) {
+  function compute(ans, chosenKey) {
     var scores = {};
+    var total = 0;
     typeKeys.forEach(function (k) { scores[k] = 0; });
-    checked.forEach(function (input) { scores[input.dataset.type]++; });
+    D.questions.forEach(function (q, i) {
+      var p = ans[i] || 0;
+      scores[q.type] += p;
+      total += p;
+    });
 
     var ranked = typeKeys.map(function (key) {
       return { key: key, score: scores[key], ratio: maxScores[key] ? scores[key] / maxScores[key] : 0 };
@@ -116,8 +169,10 @@
       topRatio: topRatio,
       tops: tops,
       second: second,
-      mixed: !chosen && tops.length >= 4,
-      low: ranked[0].score === 1
+      // すべて「いいえ」のとき（mixedResult ＝ バランス良好の結果を表示）
+      mixed: total === 0,
+      // いちばん多いタイプでも「はい」1つ分以下のとき
+      low: total > 0 && ranked[0].score <= MAX_POINTS
     };
   }
 
@@ -229,21 +284,22 @@
       (url ? "&url=" + encodeURIComponent(url) : "");
   }
 
+  // 画面の切り替え（start / quiz / tiebreak / result のどれか1つを表示）
+  function showView(name) {
+    ["start", "quiz", "tiebreak", "result"].forEach(function (v) {
+      $(v).hidden = v !== name;
+    });
+    document.body.setAttribute("data-view", name);   // スタート画面以外はヘッダーを小さく
+    window.scrollTo(0, 0);
+  }
+
   function showResult() {
-    var checked = getChecked();
-    if (checked.length === 0) {
-      $("error").textContent = "当てはまる項目を1つ以上選んでください。";
-      return;
-    }
-    var r = compute(checked);
+    var r = compute(answers);
 
     // 同点のときは、今いちばん気になるタイプをお客様に選んでもらう
-    if (r.tops.length > 1) {
-      pendingChecked = checked;
-      renderTieBreak(r, checked);
-      $("quiz").hidden = true;
-      $("tiebreak").hidden = false;
-      window.scrollTo(0, 0);
+    if (!r.mixed && r.tops.length > 1) {
+      renderTieBreak(r);
+      showView("tiebreak");
       $("tieTitle").focus({ preventScroll: true });
       try { history.pushState({ view: "tie" }, ""); } catch (e) { /* file:// 等 */ }
       return;
@@ -251,9 +307,7 @@
     showResultView(r, "push");
   }
 
-  var pendingChecked = null;
-
-  function renderTieBreak(r, checked) {
+  function renderTieBreak(r) {
     $("tieTitle").textContent = D.texts.tieTitle || "";
     $("tieLead").textContent = D.texts.tieLead || "";
     var area = $("tieOptions");
@@ -266,15 +320,12 @@
       head.appendChild(el("span", "tie-name", type.nickname));
       head.appendChild(el("span", "tie-label", fullName(t.key)));
       btn.appendChild(head);
-      // そのタイプでチェックしたサイン
+      // そのタイプで「はい」「どちらかといえば」と答えたサイン
       var ul = el("ul", "tie-signs");
-      checked.forEach(function (input) {
-        if (input.dataset.type !== t.key) return;
-        ul.appendChild(el("li", null, input.closest(".question").querySelector(".q-text").textContent));
-      });
+      answeredSigns(t.key).forEach(function (s) { ul.appendChild(el("li", null, s)); });
       btn.appendChild(ul);
       btn.addEventListener("click", function () {
-        showResultView(compute(pendingChecked, t.key), "replace");
+        showResultView(compute(answers, t.key), "replace");
       });
       area.appendChild(btn);
     });
@@ -284,10 +335,7 @@
     current = r;
     renderResult(current);
 
-    $("quiz").hidden = true;
-    $("tiebreak").hidden = true;
-    $("result").hidden = false;
-    window.scrollTo(0, 0);
+    showView("result");
     $("mainTitle").focus({ preventScroll: true });
 
     // ブラウザの「戻る」で質問画面に戻れるように
@@ -297,30 +345,40 @@
     } catch (e) { /* file:// 等 */ }
   }
 
+  // 質問画面に戻る（最後に答えた質問を表示。「前の質問に戻る」で見直せる）
   function showQuiz() {
     closeModal();
-    $("result").hidden = true;
-    $("tiebreak").hidden = true;
-    $("quiz").hidden = false;
-    window.scrollTo(0, 0);
+    if (restartPending) {
+      restartPending = false;
+      showView("start");
+      return;
+    }
+    renderQuestion();
+    showView("quiz");
   }
 
+  function startQuiz() {
+    answers = [];
+    qIndex = 0;
+    renderQuestion();
+    showView("quiz");
+  }
+
+  var restartPending = false;
+
   function backToQuiz() {
-    if (history.state && history.state.view) history.back();
+    if (history.state && history.state.view) history.back();   // popstate で showQuiz される
     else showQuiz();
   }
 
   function restart() {
-    // 回答と結果をすべて破棄
-    getChecked().forEach(function (input) {
-      input.checked = false;
-      input.closest(".question").classList.remove("is-checked");
-    });
+    // 回答と結果をすべて破棄して、スタート画面へ
+    answers = [];
+    qIndex = 0;
     current = null;
-    pendingChecked = null;
     releaseImage();
-    updateProgress();
-    backToQuiz();              // 履歴があれば戻る（popstate で showQuiz される）
+    restartPending = true;
+    backToQuiz();
   }
 
   window.addEventListener("popstate", function () {
@@ -636,8 +694,8 @@
       $("introText").textContent = D.intro;
       $("introText").hidden = false;
     }
-    renderQuestions();
-    updateProgress();
+    $("questionCount").textContent = D.questions.length;
+    renderAnswerButtons();
     renderLinks();
 
     if (C.operatorName) {
@@ -647,7 +705,8 @@
     }
     if (navigator.share) $("nativeShareBtn").hidden = false;
 
-    $("showBtn").addEventListener("click", showResult);
+    $("startBtn").addEventListener("click", startQuiz);
+    $("prevBtn").addEventListener("click", prevQuestion);
     $("restartBtn").addEventListener("click", restart);
     $("tieBackBtn").addEventListener("click", backToQuiz);
     $("saveImageBtn").addEventListener("click", openImage);
@@ -662,7 +721,7 @@
     $("nativeShareBtn").addEventListener("click", nativeShare);
     $("copyBtn").addEventListener("click", copyUrl);
 
-    // 再読み込み時などに履歴に結果状態が残っていても、必ず質問画面から始める
+    // 再読み込み時などに履歴に結果状態が残っていても、必ずスタート画面から始める
     try { if (history.state) history.replaceState(null, ""); } catch (e) { /* noop */ }
   }
 

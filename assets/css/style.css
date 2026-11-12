@@ -90,31 +90,87 @@ h1 {
 }
 .progress { height: 100%; width: 0%; background: #b58d82; transition: width .3s; }
 
-/* ---------- 質問カード ---------- */
-.question {
+/* スタート画面以外では、ヘッダーを小さくして質問を見やすく */
+body[data-view="quiz"] .site-header,
+body[data-view="tiebreak"] .site-header,
+body[data-view="result"] .site-header { padding: 4px 10px 0; }
+body[data-view="quiz"] .site-header h1,
+body[data-view="tiebreak"] .site-header h1,
+body[data-view="result"] .site-header h1 { font-size: 18px; margin: 4px 0 6px; }
+body[data-view="quiz"] .eyebrow,
+body[data-view="tiebreak"] .eyebrow,
+body[data-view="result"] .eyebrow { font-size: 10px; }
+
+/* ---------- スタート画面 ---------- */
+.start-card { text-align: center; padding: 30px 22px 26px; margin-top: 8px; }
+.start-card .intro { font-size: 15px; margin: 0; }
+.start-card .about { margin-top: 18px; }
+.start-btn { font-size: 16px; padding: 17px; margin-top: 26px; box-shadow: 0 6px 16px rgba(173, 130, 118, .3); }
+
+/* ---------- 質問カード（1問ずつ） ---------- */
+.q-card {
+  text-align: center;
+  padding: 28px 20px 22px;
+  margin-top: 6px;
+  box-shadow: 0 4px 18px rgba(120, 102, 90, .06);
+}
+.q-num {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 2px 14px;
+}
+.q-text {
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.6;
+  margin: 18px 0 26px;
+  min-height: 3.2em;              /* 1行・2行の質問でボタン位置が動きにくいように */
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+}
+.answers { display: grid; gap: 12px; }
+.answer {
+  display: block;
+  width: 100%;
+  min-height: 54px;
+  border-radius: 28px;
+  border: 1.5px solid var(--accent-border);
   background: var(--card);
-  border-radius: 14px;
-  padding: 16px 18px;
-  margin: 12px 0;
-  box-shadow: 0 2px 10px rgba(120, 102, 90, .04);
-  border: 1.5px solid transparent;
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
   cursor: pointer;
-  transition: border-color .2s, background .2s;
+  transition: background .15s, color .15s, border-color .15s, transform .1s;
   -webkit-tap-highlight-color: transparent;
 }
-.question.is-checked { border-color: var(--accent-border); background: var(--accent-soft); }
-.question input {
-  accent-color: var(--accent);
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  margin: 0;
+.answer:active { transform: scale(.98); }
+.answer.is-selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (hover: hover) { .answer:hover { border-color: var(--accent); } }
+
+.link-btn {
+  display: block;
+  margin: 14px auto 0;
+  background: none;
+  border: none;
+  color: var(--sub);
+  font-size: 14px;
+  font-family: inherit;
+  padding: 8px 12px;
+  cursor: pointer;
 }
-.q-num { font-size: 11px; color: #b8a59b; letter-spacing: 1px; display: block; line-height: 1.4; }
-.q-text { font-size: 14px; }
+
+/* 質問の切り替えアニメーション */
+.q-card.slide-next { animation: slideNext .28s ease-out; }
+.q-card.slide-prev { animation: slidePrev .28s ease-out; }
+@keyframes slideNext { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes slidePrev { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
 
 /* ---------- ボタン ---------- */
 .btn {
@@ -131,12 +187,11 @@ h1 {
 .btn.primary { background: var(--accent); color: #fff; margin-top: 20px; }
 .btn.secondary { background: var(--btn-sub); color: var(--btn-sub-text); margin-top: 12px; }
 .btn:active { opacity: .85; }
-button:focus-visible, a:focus-visible, summary:focus-visible, .question:focus-within {
+button:focus-visible, a:focus-visible, summary:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.error { font-size: 13px; color: var(--error); text-align: center; margin: 12px 0 0; min-height: 1.5em; }
 
 .notice { font-size: 11px; color: var(--muted); margin-top: 20px; }
 /* 同点のときのタイプ選択 */
@@ -350,13 +405,17 @@ button:focus-visible, a:focus-visible, summary:focus-visible, .question:focus-wi
 @media (max-width: 400px) {
   h1 { font-size: 23px; }
   .eyebrow { font-size: 10px; letter-spacing: 1.5px; }
+  .q-card { padding: 20px 16px 18px; }
+  .q-text { font-size: 18px; margin: 12px 0 18px; }
+  .answers { gap: 10px; }
+  .answer { min-height: 50px; }
+  .link-btn { margin-top: 6px; }
   .container { padding: 18px 14px calc(36px + env(safe-area-inset-bottom)); }
 }
 
 @media (min-width: 768px) {
   .container { padding-top: 48px; }
   h1 { font-size: 32px; }
-  .question:hover { border-color: var(--line); }
   .btn.primary:hover { opacity: .92; }
 }
 

@@ -30,33 +30,43 @@
 <header class="site-header">
   <div class="eyebrow">EASTERN MEDICINE / SELF CHECK</div>
   <h1>気血水セルフチェック</h1>
-  <p class="intro">
-    今のあなたの身体は、どんな状態？<br>
-    当てはまる項目を選んでみましょう。
-  </p>
-  <ul class="badges" aria-label="このチェックの特徴">
-    <li>無料</li>
-    <li>登録不要</li>
-    <li>約1分</li>
-  </ul>
-  <p class="about" id="introText" hidden></p>
 </header>
 
 <main>
 
-<!-- ===== 質問画面 ===== -->
-<section id="quiz" aria-label="質問">
+<!-- ===== スタート画面 ===== -->
+<section id="start" aria-label="はじめに">
+  <div class="card start-card">
+    <p class="intro">
+      今のあなたの身体は、どんな状態？<br>
+      直感で答えてみましょう。
+    </p>
+    <ul class="badges" aria-label="このチェックの特徴">
+      <li>全<span id="questionCount">24</span>問</li>
+      <li>約1分</li>
+      <li>無料・登録不要</li>
+    </ul>
+    <p class="about" id="introText" hidden></p>
+    <button class="btn primary start-btn" id="startBtn" type="button">チェックをはじめる</button>
+  </div>
+  <p class="privacy-lead">個人情報の入力は不要です。回答はこの端末の中だけで処理され、外部に送信・保存されません。</p>
+</section>
+
+<!-- ===== 質問画面（1問ずつ） ===== -->
+<section id="quiz" aria-label="質問" hidden>
   <div class="status">
-    <div class="counter" id="counter">0 / 24 項目選択中</div>
+    <div class="counter" id="counter">1 / 24</div>
     <div class="progress-wrap"><div class="progress" id="progress"></div></div>
   </div>
 
-  <div id="questions"></div>
+  <div class="card q-card" id="qCard" aria-live="polite">
+    <div class="q-num" id="qNum">Q1</div>
+    <p class="q-text" id="qText"></p>
+    <div class="answers" id="answerButtons"></div>
+  </div>
 
-  <button class="btn primary" id="showBtn" type="button">チェック結果を見る</button>
-  <p class="error" id="error" role="alert"></p>
-  <p class="notice">※複数選択できます。普段の状態や最近の傾向を思い浮かべてお答えください。</p>
-  <p class="privacy-lead">個人情報の入力は不要です。回答はこの端末の中だけで処理され、外部に送信・保存されません。</p>
+  <button class="link-btn" id="prevBtn" type="button" hidden>‹ 前の質問に戻る</button>
+  <p class="notice">普段の状態や、最近の傾向を思い浮かべてお答えください。</p>
 </section>
 
 <!-- ===== 同点のときのタイプ選択 ===== -->
