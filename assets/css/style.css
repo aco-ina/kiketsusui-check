@@ -197,6 +197,24 @@ button:focus-visible, a:focus-visible, summary:focus-visible {
 /* 同点のときのタイプ選択 */
 #tiebreak h2 { font-size: 21px; font-weight: 500; margin: 5px 0 6px; outline: none; }
 #tiebreak p { font-size: 14px; margin: 0 0 14px; }
+.sign-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1.5px solid var(--accent-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 0 0 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.sign-option input { accent-color: var(--accent); width: 20px; height: 20px; flex-shrink: 0; margin: 0; }
+.sign-option.is-selected { background: var(--accent-soft); border-color: var(--accent); }
+.sign-option:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+#tieDecideBtn:disabled { opacity: .45; cursor: default; }
 .tie-option {
   display: block;
   width: 100%;

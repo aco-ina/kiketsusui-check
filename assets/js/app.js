@@ -328,23 +328,41 @@
     $("tieLead").textContent = D.texts.tieLead || "";
     var area = $("tieOptions");
     area.textContent = "";
-    r.tops.forEach(function (t) {
-      var type = D.types[t.key];
-      var btn = el("button", "tie-option");
-      btn.type = "button";
-      var head = el("span", "tie-head");
-      head.appendChild(el("span", "tie-name", type.nickname));
-      head.appendChild(el("span", "tie-label", fullName(t.key)));
-      btn.appendChild(head);
-      // そのタイプで「はい」「どちらかといえば」と答えたサイン
-      var ul = el("ul", "tie-signs");
-      answeredSigns(t.key).forEach(function (s) { ul.appendChild(el("li", null, s)); });
-      btn.appendChild(ul);
-      btn.addEventListener("click", function () {
-        showResultView(compute(answers, t.key), "replace");
-      });
-      area.appendChild(btn);
+    tieChoice = null;
+    $("tieDecideBtn").disabled = true;
+
+    // 候補タイプのサイン（答えた質問）を、タイプ名を出さずに交互に並べる
+    var lists = r.tops.map(function (t) {
+      return answeredSigns(t.key).map(function (s) { return { text: s, key: t.key }; });
     });
+    var signs = [];
+    for (var i = 0; lists.some(function (l) { return i < l.length; }); i++) {
+      lists.forEach(function (l) { if (i < l.length) signs.push(l[i]); });
+    }
+
+    signs.forEach(function (s) {
+      var label = el("label", "sign-option");
+      var input = document.createElement("input");
+      input.type = "radio";
+      input.name = "tieSign";
+      input.addEventListener("change", function () {
+        tieChoice = s.key;
+        $("tieDecideBtn").disabled = false;
+        Array.prototype.forEach.call(area.querySelectorAll(".sign-option"), function (o) {
+          o.classList.toggle("is-selected", o === label);
+        });
+      });
+      label.appendChild(input);
+      label.appendChild(el("span", null, s.text));
+      area.appendChild(label);
+    });
+  }
+
+  var tieChoice = null;   // 選ばれたサインのタイプ
+
+  function decideTie() {
+    if (!tieChoice) return;
+    showResultView(compute(answers, tieChoice), "replace");
   }
 
   function showResultView(r, historyMode) {
@@ -728,6 +746,7 @@
     $("prevBtn").addEventListener("click", prevQuestion);
     $("restartBtn").addEventListener("click", restart);
     $("tieBackBtn").addEventListener("click", backToQuiz);
+    $("tieDecideBtn").addEventListener("click", decideTie);
     $("saveImageBtn").addEventListener("click", openImage);
     $("downloadBtn").addEventListener("click", saveImage);
     $("closeModalBtn").addEventListener("click", closeModal);

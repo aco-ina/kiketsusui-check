@@ -69,13 +69,14 @@
   <p class="notice">普段の状態や、最近の傾向を思い浮かべてお答えください。</p>
 </section>
 
-<!-- ===== 同点のときのタイプ選択 ===== -->
-<section id="tiebreak" aria-label="タイプを選ぶ" hidden>
+<!-- ===== 同点・僅差のときのサイン選択 ===== -->
+<section id="tiebreak" aria-label="いちばん気になるサインを選ぶ" hidden>
   <div class="card tie-card">
     <div class="result-label">ONE MORE STEP</div>
     <h2 id="tieTitle" tabindex="-1"></h2>
     <p id="tieLead"></p>
-    <div id="tieOptions"></div>
+    <div id="tieOptions" role="radiogroup" aria-labelledby="tieLead"></div>
+    <button class="btn primary" id="tieDecideBtn" type="button" disabled>この内容で結果を見る</button>
   </div>
   <button class="btn secondary" id="tieBackBtn" type="button">質問に戻る</button>
 </section>
