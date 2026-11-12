@@ -516,139 +516,196 @@
     return size;
   }
 
+  // 日本語の文章を幅に合わせて折り返す（句読点や閉じかっこが行頭に来ないように）
+  var NO_LINE_START = "、。，．）」』】！？!?ー・…ぁぃぅぇぉっゃゅょァィゥェォッャュョ";
+  function wrapLines(ctx, text, maxW) {
+    var lines = [];
+    var line = "";
+    Array.from(text).forEach(function (ch) {
+      var test = line + ch;
+      if (line && ctx.measureText(test).width > maxW) {
+        if (NO_LINE_START.indexOf(ch) >= 0) { lines.push(test); line = ""; return; }
+        lines.push(line);
+        line = ch;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  // 保存画像（縦長 1080×1920）：タイトル・今の身体の傾向・おすすめのライフスタイル・食養生のヒント
   function drawResultImage(r) {
-    var W = 1080, H = 1350;
+    var W = 1080, H = 1920;
     var cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     var ctx = cv.getContext("2d");
-    var L = 130, R = W - 130, CW = R - L;
+    var L = 120, R = W - 120, CW = R - L;
+    var FOOTER_TOP = H - 170;
+
+    var src = r.mixed ? D.mixedResult : D.types[r.tops[0].key];
+    var title = r.mixed ? D.mixedResult.title : fullName(r.tops[0].key);
+    var nickname = src.nickname || "";
+    var tendency = src.description || "";
+    if (!r.mixed && r.second) {
+      tendency += "また、" + fullName(r.second.key) + "の傾向も見られます。";
+    }
+    var lifestyle = src.lifestyle || "";
+    var food = src.food || { good: [] };
+
+    // 文字が多いときは、収まるまで本文の文字を小さくする
+    function layout(bodySize, draw) {
+      var lh = Math.round(bodySize * 1.65);
+      var y = 0;
+
+      function text(str, size, weight, color, align, x) {
+        if (draw) {
+          ctx.font = font(size, weight);
+          ctx.fillStyle = color;
+          ctx.textAlign = align || "left";
+          ctx.fillText(str, x, y);
+        }
+      }
+
+      function heading(label) {
+        y += 84;
+        if (draw) {
+          ctx.fillStyle = P.accent;
+          roundRect(ctx, L, y - 30, 8, 36, 4);
+          ctx.fill();
+        }
+        spacing(ctx, 2);
+        text(label, 32, 600, P.accent, "left", L + 24);
+        spacing(ctx, 0);
+        y += 22;
+      }
+
+      function paragraph(str, box) {
+        ctx.font = font(bodySize, 400);
+        var pad = box ? 30 : 0;
+        var lines = wrapLines(ctx, str, CW - pad * 2);
+        var h = lines.length * lh + (box ? pad * 1.4 : 0);
+        if (box && draw) {
+          ctx.fillStyle = P.chip;
+          roundRect(ctx, L, y + 8, CW, h, 20);
+          ctx.fill();
+          ctx.fillStyle = P.line;
+          ctx.fillRect(L, y + 8, 6, h);
+        }
+        var top = y + (box ? pad * 0.7 : 0);
+        lines.forEach(function (ln, i) {
+          y = top + (i + 1) * lh;
+          text(ln, bodySize, 400, P.text, "left", L + pad);
+        });
+        y = top + lines.length * lh + (box ? pad * 0.7 : 0);
+      }
+
+      // ヘッダー
+      y = 150;
+      spacing(ctx, 6);
+      text("EASTERN MEDICINE / SELF CHECK", 24, 400, P.light, "center", W / 2);
+      y += 62;
+      spacing(ctx, 4);
+      var st = fitFont(ctx, C.siteTitle, CW, 44, 28, 500);
+      text(C.siteTitle, st, 500, P.text, "center", W / 2);
+      y += 40;
+      if (draw) { ctx.fillStyle = P.line; ctx.fillRect(L, y, CW, 2); }
+
+      // 結果タイトル
+      y += 72;
+      text("YOUR CURRENT BALANCE", 24, 400, P.accent, "center", W / 2);
+      y += 96;
+      spacing(ctx, 2);
+      if (draw) {
+        var ts = fitFont(ctx, title, CW, 80, 40, 500);
+        text(title, ts, 500, P.text, "center", W / 2);
+      }
+      spacing(ctx, 0);
+      if (nickname) {
+        y += 64;
+        if (draw) {
+          var ns = fitFont(ctx, nickname, CW, 38, 24, 600);
+          text(nickname, ns, 600, P.accent, "center", W / 2);
+        }
+      }
+
+      // 今の身体の傾向
+      heading("今の身体の傾向");
+      paragraph(tendency, false);
+
+      // おすすめのライフスタイル
+      if (lifestyle) {
+        heading("おすすめのライフスタイル");
+        paragraph(lifestyle, true);
+      }
+
+      // 食養生のヒント（食材は3行まで）
+      if (food.good && food.good.length) {
+        heading("食養生のヒント");
+        y += 10;
+        var chipFont = Math.max(24, bodySize - 4);
+        var chipH = Math.round(chipFont * 2), gap = 12, rows = 1, maxRows = 3, x = L;
+        ctx.font = font(chipFont);
+        food.good.forEach(function (g) {
+          var w = ctx.measureText(g).width + chipFont * 1.5;
+          if (x + w > R) {
+            if (rows >= maxRows) return;      // 3行に収まらない食材は省略
+            rows++;
+            x = L;
+            y += chipH + gap;
+          }
+          if (draw) {
+            ctx.fillStyle = P.chip;
+            roundRect(ctx, x, y, w, chipH, chipH / 2);
+            ctx.fill();
+            ctx.strokeStyle = P.line;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = P.text;
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            ctx.fillText(g, x + chipFont * 0.75, y + chipH / 2 + 1);
+            ctx.textBaseline = "alphabetic";
+          }
+          x += w + gap;
+        });
+        y += chipH;
+        if (food.tip) {
+          y += 6;
+          paragraph(food.tip, false);
+        }
+      }
+      return y;
+    }
+
+    // 収まる本文サイズを探す（34px から小さく）
+    var bodySize = 34;
+    while (bodySize > 24 && layout(bodySize, false) > FOOTER_TOP - 20) bodySize -= 2;
 
     ctx.fillStyle = P.bg;
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = P.card;
-    roundRect(ctx, 60, 60, W - 120, H - 120, 40);
+    roundRect(ctx, 50, 50, W - 100, H - 100, 44);
     ctx.fill();
-
-    // ヘッダー
-    ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
-    var y = 150;
-    spacing(ctx, 6);
-    ctx.font = font(24);
-    ctx.fillStyle = P.light;
-    ctx.fillText("EASTERN MEDICINE / SELF CHECK", W / 2, y);
-
-    y += 60;
-    spacing(ctx, 4);
-    fitFont(ctx, C.siteTitle, CW, 42, 28, 500);
-    ctx.fillStyle = P.text;
-    ctx.fillText(C.siteTitle, W / 2, y);
-
-    y += 38;
-    ctx.fillStyle = P.line;
-    ctx.fillRect(L, y, CW, 2);
-
-    // 結果タイトル
-    y += 70;
-    spacing(ctx, 4);
-    ctx.font = font(24);
-    ctx.fillStyle = P.accent;
-    ctx.fillText("YOUR CURRENT BALANCE", W / 2, y);
-
-    y += 92;
-    spacing(ctx, 2);
-    var title = (r.mixed || r.tops.length > 1) ? resultShortTitle(r).replace(/・/g, " × ") : fullName(r.tops[0].key);
-    fitFont(ctx, title, CW, 76, 36, 500);
-    ctx.fillStyle = P.text;
-    ctx.fillText(title, W / 2, y);
-
-    y += 56;
-    spacing(ctx, 0);
-    var sub = r.mixed ? D.mixedResult.nickname
-      : r.tops.length > 1 ? r.tops.map(function (t) { return D.types[t.key].nickname; }).join(" × ")
-      : D.types[r.tops[0].key].nickname;
-    fitFont(ctx, sub, CW, 30, 22, 400);
-    ctx.fillStyle = P.sub;
-    ctx.fillText(sub, W / 2, y);
-
-    // バランス
-    y += 40;
-    var rowH = r.ranked.length > 5 ? 62 : 70;   // タイプ数が多いときは行間を詰める
-    r.ranked.forEach(function (item) {
-      y += rowH;
-      var isTop = isTopItem(r, item);
-      ctx.textAlign = "left";
-      ctx.font = font(30, 600);
-      ctx.fillStyle = isTop ? P.accent : P.text;
-      ctx.fillText(fullName(item.key), L, y);
-      ctx.textAlign = "right";
-      ctx.font = font(28, 400);
-      ctx.fillStyle = P.text;
-      ctx.fillText(item.score + "/" + maxScores[item.key], R, y);
-
-      ctx.fillStyle = P.track;
-      roundRect(ctx, L, y + 16, CW, 12, 6);
-      ctx.fill();
-      if (item.ratio > 0) {
-        ctx.fillStyle = P.fill;
-        roundRect(ctx, L, y + 16, CW * item.ratio, 12, 6);
-        ctx.fill();
-      }
-    });
-
-    // 食材
-    y += 72;
-    ctx.fillStyle = P.line;
-    ctx.fillRect(L, y, CW, 2);
-    y += 58;
-    ctx.textAlign = "left";
-    ctx.font = font(28, 600);
-    ctx.fillStyle = P.accent;
-    ctx.fillText("おすすめの食材", L, y);
-
-    var foods = [];
-    adviceSources(r).forEach(function (s) {
-      (s.data.food ? s.data.food.good : []).forEach(function (g) {
-        if (foods.indexOf(g) < 0) foods.push(g);
-      });
-    });
-    y += 24;
-    var x = L, chipH = 56, gap = 14, rows = 1, maxRows = 2;
-    ctx.font = font(26);
-    for (var i = 0; i < foods.length; i++) {
-      var w = ctx.measureText(foods[i]).width + 44;
-      if (x + w > R) {
-        if (rows >= maxRows) continue;   // 2行に収まらない食材は省略
-        rows++;
-        x = L;
-        y += chipH + gap;
-      }
-      ctx.fillStyle = P.chip;
-      roundRect(ctx, x, y, w, chipH, 28);
-      ctx.fill();
-      ctx.strokeStyle = P.line;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = P.text;
-      ctx.textBaseline = "middle";
-      ctx.fillText(foods[i], x + 22, y + chipH / 2 + 1);
-      ctx.textBaseline = "alphabetic";
-      x += w + gap;
-    }
+    layout(bodySize, true);
 
     // フッター
+    ctx.fillStyle = P.line;
+    ctx.fillRect(L, FOOTER_TOP, CW, 2);
     ctx.textAlign = "center";
-    ctx.font = font(21);
+    ctx.font = font(22);
     ctx.fillStyle = P.sub;
-    ctx.fillText("※東洋医学の考え方にもとづくセルフチェックです。医学的な診断ではありません。", W / 2, H - 120);
+    ctx.fillText("※東洋医学の考え方にもとづくセルフチェックです。医学的な診断ではありません。", W / 2, FOOTER_TOP + 52);
     var foot = [];
     if (C.operatorName) foot.push(C.operatorName);
     var u = shareUrl();
     if (u) foot.push(u.replace(/^https?:\/\//, "").replace(/\/$/, ""));
     if (foot.length) {
-      ctx.font = font(24, 500);
+      ctx.font = font(26, 500);
       ctx.fillStyle = P.accent;
-      ctx.fillText(foot.join("  |  "), W / 2, H - 82);
+      ctx.fillText(foot.join("  |  "), W / 2, FOOTER_TOP + 96);
     }
     return cv;
   }
